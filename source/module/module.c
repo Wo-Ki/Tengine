@@ -279,6 +279,7 @@ int get_device_count()
 
 int register_device(ir_device_t* device)
 {
+
     initialize_device_registry(device->name);
     if (NULL == internal_device_registry)
     {

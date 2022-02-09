@@ -295,7 +295,7 @@ int init_tengine(void)
         return ret;
     }
 
-    ret = register_all_devices();
+    ret = register_all_devices(); // TODO: error
     if (0 != ret)
     {
         TLOG_ERR("Tengine: Register neural network devices failed: %d\n", ret);

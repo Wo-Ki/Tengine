@@ -120,6 +120,7 @@ int tengine_classify(const char* model_file, const char* image_file, int img_h, 
     }
 
     /* prepare process input data, set the data mem to input tensor */
+    fprintf(stderr, "Img name: %s\n", image_file);
     get_input_data(image_file, input_data, img_h, img_w, mean, scale);
 
     /* run graph */
@@ -154,7 +155,7 @@ int tengine_classify(const char* model_file, const char* image_file, int img_h, 
     tensor_t output_tensor = get_graph_output_tensor(graph, 0, 0);
     float* output_data = (float*)get_tensor_buffer(output_tensor);
     int output_size = get_tensor_buffer_size(output_tensor) / sizeof(float);
-
+    fprintf(stderr, "output size: %d\n", output_size);
     print_topk(output_data, output_size, 5);
     fprintf(stderr, "--------------------------------------\n");
 

@@ -57,8 +57,8 @@ OPTION (TENGINE_BUILD_CPP_API               "Build C++ API"                     
 
 # Tools options
 # Tools
-OPTION (TENGINE_BUILD_CONVERT_TOOL          "Build convert tool"                        OFF)
-OPTION (TENGINE_BUILD_QUANT_TOOL            "Build quantization tool"                   OFF)
+OPTION (TENGINE_BUILD_CONVERT_TOOL          "Build convert tool"                        ON)
+OPTION (TENGINE_BUILD_QUANT_TOOL            "Build quantization tool"                   ON)
 
 # Multithreading option
 OPTION (TENGINE_OPENMP                      "Build with OpenMP support"                 ON)
@@ -92,7 +92,7 @@ OPTION (TENGINE_ENABLE_ALL_SYMBOL           "All symbol visible"                
 OPTION (TENGINE_ENABLE_MODEL_CACHE          "NPU kernel cache file option"              OFF)
 
 # Online report
-OPTION (TENGINE_ONLINE_REPORT               "online report"                             ON)
+OPTION (TENGINE_ONLINE_REPORT               "online report"                             OFF)
 
 # Do check list
 INCLUDE ("${CMAKE_CURRENT_SOURCE_DIR}/cmake/check.cmake")

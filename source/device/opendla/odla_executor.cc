@@ -102,7 +102,7 @@ NvDlaError ODLAEngine::ODLAConfigGenerate(){
 #endif
     NvDlaError e = NvDlaSuccess;
 
-    nvdla::IProfiler* profiler = nvdla::priv::ProfilerFactory::newProfiler().priv();;
+    nvdla::IProfiler* profiler = nvdla::priv::ProfilerFactory::newProfiler().priv();
     if ( !profiler )
     {
         ORIGINATE_ERROR_FAIL(NvDlaError_BadParameter, "No profiler available.");
@@ -467,7 +467,7 @@ int ODLAEngine::Build(struct subgraph* subgraph)
         if(!Node) {
             fprintf(stderr, "%s: node create failed, op type is : %d .\n", __func__, op_type);
         };
-        Node->setGraph(this->graph);
+        Node->setGraph(this->graph); // 此graph为nvdla graph
         this->graph->insertNode(Node);
         Node->setId(this->graph->nextNodeId());
         Node->setName(ir_node->name);

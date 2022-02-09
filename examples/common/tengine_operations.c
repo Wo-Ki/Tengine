@@ -1018,7 +1018,7 @@ static void sort_cls_score(cls_score* array, int left, int right)
     sort_cls_score(array, left + 1, j);
 }
 
-void print_topk(float* data, int total_num, int topk)
+int print_topk(float* data, int total_num, int topk)
 {
     assert(total_num >= topk);
     cls_score* cls_scores = (cls_score*)malloc(total_num * sizeof(cls_score));
@@ -1034,5 +1034,7 @@ void print_topk(float* data, int total_num, int topk)
     {
         fprintf(stderr, "%f, %d\n", cls_scores[i].score, cls_scores[i].id);
     }
+    int top_label = cls_scores[0].id;
     free(cls_scores);
+    return top_label;
 }

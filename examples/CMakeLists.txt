@@ -55,6 +55,8 @@ ENDIF()
 
 # add c api examples
 TENGINE_EXAMPLE (tm_classification           tm_classification.c)
+TENGINE_EXAMPLE (tm_classification_cifar10_eval      tm_classification_cifar10_eval.c)
+TENGINE_EXAMPLE (tm_classification_int8_cifar10_eval      tm_classification_int8_cifar10_eval.c)
 TENGINE_EXAMPLE (tm_classification_int8      tm_classification_int8.c)
 TENGINE_EXAMPLE (tm_classification_uint8     tm_classification_uint8.c)
 TENGINE_EXAMPLE (tm_efficientdet             tm_efficientdet.c)
@@ -83,6 +85,8 @@ ENDIF()
 
 IF(TENGINE_ENABLE_OPENDLA)
     TENGINE_EXAMPLE (tm_classification_opendla      tm_classification_opendla.c)
+    TENGINE_EXAMPLE (tm_classification_opendla_cifar10_eval      tm_classification_opendla_cifar10_eval.c)
+
 ENDIF()
 
 IF(TENGINE_ENABLE_TENSORRT)

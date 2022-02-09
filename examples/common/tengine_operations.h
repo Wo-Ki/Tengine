@@ -325,8 +325,9 @@ static void sort_cls_score(cls_score* array, int left, int right);
  * @param [in] data : data
  * @param [in] total_num: total class num
  * @param [in] topk : top k
+ * @param [out] output: top k label
  */
-void print_topk(float* data, int total_num, int topk);
+int print_topk(float* data, int total_num, int topk);
 
 #ifdef __cplusplus
 }

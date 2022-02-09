@@ -419,6 +419,7 @@ int register_cpu_device(void)
 #ifdef TENGINE_AUTO_LOAD_HCL
     dlopen("libtengine_hcl.so", RTLD_NOW);
 #endif
+    TLOG_INFO("register_cpu_device:1  %s register.\n", cpu_dev.base.name);
 
     int ret = register_device(&cpu_dev.base);
     if (0 != ret)
