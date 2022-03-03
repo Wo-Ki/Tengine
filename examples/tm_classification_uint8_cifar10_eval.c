@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright (c) 2020, OPEN AI LAB
- * Author: qtang@openailab.com
+ * Author: Wo-Ki
  */
 
 #include <stdlib.h>
@@ -41,8 +40,8 @@
 #define DEFAULT_LOOP_COUNT   1
 #define DEFAULT_THREAD_COUNT 1
 
-void get_input_int8_data(const char* image_file, int8_t* input_data, int img_h, int img_w, float* mean, float* scale,
-                         float input_scale)
+void get_input_uint8_data(const char* image_file, uint8_t* input_data, int img_h, int img_w, float* mean, float* scale,
+                          float input_scale, int zero_point)
 {
     image img = imread_process(image_file, img_w, img_h, mean, scale);
 
@@ -50,25 +49,26 @@ void get_input_int8_data(const char* image_file, int8_t* input_data, int img_h, 
 
     for (int i = 0; i < img_w * img_h * 3; i++)
     {
-        int idata = (round)(image_data[i] / input_scale);
-        if (idata > 127)
-            idata = 127;
-        else if (idata < -127)
-            idata = -127;
+        int udata = (round)(image_data[i] / input_scale + zero_point);
+        if (udata > 255)
+            udata = 255;
+        else if (udata < 0)
+            udata = 0;
 
-        input_data[i] = idata;
+        input_data[i] = udata;
     }
 
     free_image(img);
 }
 
-int tengine_classify(const char* model_file, const char* image_dir, int img_h, int img_w, float* mean, float* scale, int num_thread)
+int tengine_classify(const char* model_file, const char* image_dir, int img_h, int img_w, float* mean, float* scale,
+                     int loop_count, int num_thread)
 {
     /* set runtime options */
     struct options opt;
     opt.num_thread = num_thread;
     opt.cluster = TENGINE_CLUSTER_ALL;
-    opt.precision = TENGINE_MODE_INT8;
+    opt.precision = TENGINE_MODE_UINT8;
     opt.affinity = 0;
 
     /* inital tengine */
@@ -90,7 +90,11 @@ int tengine_classify(const char* model_file, const char* image_dir, int img_h, i
     /* set the input shape to initial the graph, and prerun graph to infer shape */
     int img_size = img_h * img_w * 3;
     int dims[] = {1, 3, img_h, img_w}; // nchw
-    int8_t* input_data = (int8_t*)malloc(img_size);
+    uint8_t* input_data = (uint8_t*)malloc(img_size);
+    if (input_data == NULL)
+    {
+        return -1;
+    }
 
     tensor_t input_tensor = get_graph_input_tensor(graph, 0, 0);
     if (input_tensor == NULL)
@@ -98,31 +102,33 @@ int tengine_classify(const char* model_file, const char* image_dir, int img_h, i
         fprintf(stderr, "Get input tensor failed\n");
         return -1;
     }
+    /* get the result of classification */
+    tensor_t output_tensor = get_graph_output_tensor(graph, 0, 0);
 
     if (set_tensor_shape(input_tensor, dims, 4) < 0)
     {
         fprintf(stderr, "Set input tensor shape failed\n");
         return -1;
     }
-    /* get the result of classification */
-    tensor_t output_tensor = get_graph_output_tensor(graph, 0, 0);
 
+//    if (set_tensor_buffer(input_tensor, input_data, img_size) < 0)
+//    {
+//        fprintf(stderr, "Set input tensor buffer failed\n");
+//        return -1;
+//    }
+
+    /* prerun graph, set work options(num_thread, cluster, precision) */
     if (prerun_graph_multithread(graph, opt) < 0)
     {
         fprintf(stderr, "Prerun multithread graph failed.\n");
         return -1;
     }
 
-//    /* prepare process input data, set the data mem to input tensor */
+    /* prepare process input data, set the data mem to input tensor */
     float input_scale = 0.f;
     int input_zero_point = 0;
 //    get_tensor_quant_param(input_tensor, &input_scale, &input_zero_point, 1);
-//    get_input_int8_data(image_file, input_data, img_h, img_w, mean, scale, input_scale);
-//    if (set_tensor_buffer(input_tensor, input_data, img_size) < 0)
-//    {
-//        fprintf(stderr, "Set input tensor buffer failed\n");
-//        return -1;
-//    }
+//    get_input_uint8_data(image_d, input_data, img_h, img_w, mean, scale, input_scale, input_zero_point);
 
     /* run graph */
     double min_time = DBL_MAX;
@@ -149,9 +155,8 @@ int tengine_classify(const char* model_file, const char* image_dir, int img_h, i
                 sprintf(tmp_image_dir, "%s/%s", tmp_sub_dir, dir->d_name);
                 fprintf(stderr, "Img name: %s\n", tmp_image_dir);
 
-                /* prepare process input data, set the data mem to input tensor */
                 get_tensor_quant_param(input_tensor, &input_scale, &input_zero_point, 1);
-                get_input_int8_data(tmp_image_dir, input_data, img_h, img_w, mean, scale, input_scale);
+                get_input_uint8_data(tmp_image_dir, input_data, img_h, img_w, mean, scale, input_scale, input_zero_point);
                 if (set_tensor_buffer(input_tensor, input_data, img_size) < 0)
                 {
                     fprintf(stderr, "Set input tensor buffer failed\n");
@@ -171,38 +176,26 @@ int tengine_classify(const char* model_file, const char* image_dir, int img_h, i
                     min_time = cur;
                 if (max_time < cur)
                     max_time = cur;
-//                for (unsigned int i = 0; i < strlen(tmp_image_dir); i++)
-//                {
-//                    tmp_image_dir[i] = '\0';
-//                }
+
                 /* get the result of classification */
-//                tensor_t output_tensor = get_graph_output_tensor(graph, 0, 0);
-                int8_t* output_i8 = (int8_t*)get_tensor_buffer(output_tensor);
+                //                tensor_t output_tensor = get_graph_output_tensor(graph, 0, 0);
+                uint8_t* output_u8 = (uint8_t*)get_tensor_buffer(output_tensor);
                 int output_size = get_tensor_buffer_size(output_tensor);
+
                 /* dequant */
                 float output_scale = 0.f;
                 int output_zero_point = 0;
                 get_tensor_quant_param(output_tensor, &output_scale, &output_zero_point, 1);
                 float* output_data = (float*)malloc(output_size * sizeof(float));
                 for (int i = 0; i < output_size; i++)
-                    output_data[i] = (float)output_i8[i] * output_scale;
+                    output_data[i] = ((float)output_u8[i] - (float)output_zero_point) * output_scale;
 
                 int top_label = print_topk(output_data, output_size, 5);
                 if (top_label == idx) right_res_count++;
                 fprintf(stderr, "--------------------------------------\n");
                 free(output_data);
-                release_graph_tensor(output_tensor);
             }
         }
-        else
-        {
-            fprintf(stderr, "Dir: %s is None, return...\n", tmp_sub_dir);
-            return -1;
-        }
-//        for (unsigned int j = 0; j < strlen(tmp_sub_dir); j++)
-//        {
-//            tmp_sub_dir[j] = '\0';
-//        }
     }
     fprintf(stderr, "\nmodel file : %s\n", model_file);
     fprintf(stderr, "image dir : %s\n", image_dir);
@@ -215,11 +208,16 @@ int tengine_classify(const char* model_file, const char* image_dir, int img_h, i
     fprintf(stderr, "--------------------------------------\n");
 
 
+
+
+
     /* release tengine */
     free(input_data);
 //    free(output_data);
     release_graph_tensor(input_tensor);
-//    release_graph_tensor(output_tensor);
+
+    release_graph_tensor(output_tensor);
+
     postrun_graph(graph);
     destroy_graph(graph);
     release_tengine();
@@ -232,15 +230,16 @@ void show_usage()
     fprintf(
         stderr,
         "[Usage]:  [-h]\n    [-m model_file] [-i image_dir]\n [-g img_h,img_w] [-s scale[0],scale[1],scale[2]] [-w "
-        "mean[0],mean[1],mean[2]] [-t thread_count]\n");
+        "mean[0],mean[1],mean[2]] [-r loop_count] [-t thread_count]\n");
     fprintf(
         stderr,
-        "\nmobilenet example: \n    ./classification -m /path/to/mobilenet.tmfile -i /path/to/img/path -g 224,224 -s "
+        "\nmobilenet example: \n    ./classification -m /path/to/mobilenet.tmfile -i /path/to/img.jpg -g 224,224 -s "
         "0.017,0.017,0.017 -w 104.007,116.669,122.679\n");
 }
 
 int main(int argc, char* argv[])
 {
+    int loop_count = DEFAULT_LOOP_COUNT;
     int num_thread = DEFAULT_THREAD_COUNT;
     char* model_file = NULL;
     char* image_dir = NULL;
@@ -251,7 +250,7 @@ int main(int argc, char* argv[])
     float scale[3] = {0.f, 0.f, 0.f};
 
     int res;
-    while ((res = getopt(argc, argv, "m:i:l:g:s:w:t:h")) != -1)
+    while ((res = getopt(argc, argv, "m:i:l:g:s:w:r:t:h")) != -1)
     {
         switch (res)
         {
@@ -271,6 +270,9 @@ int main(int argc, char* argv[])
             break;
         case 'w':
             split(mean, optarg, ",");
+            break;
+        case 'r':
+            loop_count = atoi(optarg);
             break;
         case 't':
             num_thread = atoi(optarg);
@@ -329,7 +331,7 @@ int main(int argc, char* argv[])
         fprintf(stderr, "Mean value not specified, use default   %.1f, %.1f, %.1f\n", mean[0], mean[1], mean[2]);
     }
 
-    if (tengine_classify(model_file, image_dir, img_h, img_w, mean, scale, num_thread) < 0)
+    if (tengine_classify(model_file, image_dir, img_h, img_w, mean, scale, loop_count, num_thread) < 0)
         return -1;
 
     return 0;

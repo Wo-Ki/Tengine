@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright (c) 2020, OPEN AI LAB
- * Author: qtang@openailab.com
+ * Author: wo-ki
  */
 
 #include <stdlib.h>
@@ -107,11 +106,14 @@ int tengine_classify(const char* model_file, const char* image_dir, int img_h, i
         return -1;
     }
 
-    if (set_tensor_buffer(input_tensor, input_data, img_size * sizeof(float)) < 0)
-    {
-        fprintf(stderr, "Set input tensor buffer failed\n");
-        return -1;
-    }
+    //    if (set_tensor_buffer(input_tensor, input_data, img_size * sizeof(float)) < 0)
+    //    {
+    //        fprintf(stderr, "Set input tensor buffer failed\n");
+    //        return -1;
+    //    }
+
+    /* get the result of classification */
+    tensor_t output_tensor = get_graph_output_tensor(graph, 0, 0);
 
     /* prerun graph, set work options(num_thread, cluster, precision) */
     if (prerun_graph_multithread(graph, opt) < 0)
@@ -147,6 +149,13 @@ int tengine_classify(const char* model_file, const char* image_dir, int img_h, i
 
                 /* prepare process input data, set the data mem to input tensor */
                 get_input_data(tmp_image_dir, input_data, img_h, img_w, mean, scale);
+
+                if (set_tensor_buffer(input_tensor, input_data, img_size * sizeof(float)) < 0)
+                {
+                    fprintf(stderr, "Set input tensor buffer failed\n");
+                    return -1;
+                }
+
                 double start = get_current_time();
                 if (run_graph(graph, 1) < 0)
                 {
@@ -160,17 +169,15 @@ int tengine_classify(const char* model_file, const char* image_dir, int img_h, i
                     min_time = cur;
                 if (max_time < cur)
                     max_time = cur;
-//                for (unsigned int i = 0; i < strlen(tmp_image_dir); i++)
-//                {
-//                    tmp_image_dir[i] = '\0';
-//                }
+
                 /* get the result of classification */
-                tensor_t output_tensor = get_graph_output_tensor(graph, 0, 0);
+                //                tensor_t output_tensor = get_graph_output_tensor(graph, 0, 0);
                 float* output_data = (float*)get_tensor_buffer(output_tensor);
                 int output_size = get_tensor_buffer_size(output_tensor) / sizeof(float);
                 int top_label = print_topk(output_data, output_size, 5);
                 if (top_label == idx) right_res_count++;
                 fprintf(stderr, "--------------------------------------\n");
+                free(output_data);
             }
         }
         else
@@ -178,10 +185,10 @@ int tengine_classify(const char* model_file, const char* image_dir, int img_h, i
             fprintf(stderr, "Dir: %s is None, return...\n", tmp_sub_dir);
             return -1;
         }
-//        for (unsigned int i = 0; i < strlen(tmp_sub_dir); i++)
-//        {
-//            tmp_sub_dir[i] = '\0';
-//        }
+        //        for (unsigned int i = 0; i < strlen(tmp_sub_dir); i++)
+        //        {
+        //            tmp_sub_dir[i] = '\0';
+        //        }
     }
     fprintf(stderr, "\nmodel file : %s\n", model_file);
     fprintf(stderr, "img_h, img_w, scale[3], mean[3] : %d %d , %.3f %.3f %.3f, %.1f %.1f %.1f\n", img_h, img_w,
@@ -194,6 +201,8 @@ int tengine_classify(const char* model_file, const char* image_dir, int img_h, i
 
     /* release tengine */
     free(input_data);
+    release_graph_tensor(input_tensor);
+    release_graph_tensor(output_tensor);
     postrun_graph(graph);
     destroy_graph(graph);
     release_tengine();

@@ -43,24 +43,24 @@ int hcw_dev_init(struct device* dev)
 
 int hcw_dev_prerun(struct device* dev, struct subgraph* subgraph, void* options)
 {
-    subgraph->device_graph = new ODLAEngine;
-    auto engine = (ODLAEngine*)subgraph->device_graph;
+    subgraph->device_graph = new HCWEngine;
+    auto engine = (HCWEngine*)subgraph->device_graph;
 
-    return engine->ODLAEnginePreRun(subgraph);
+    return engine->HCWEnginePreRun(subgraph);
 }
 
 
 int hcw_dev_run(struct device* dev, struct subgraph* subgraph)
 {
-    auto engine = (ODLAEngine*)subgraph->device_graph;
-    return engine->ODLAEngineRun(subgraph);
+    auto engine = (HCWEngine*)subgraph->device_graph;
+    return engine->HCWEngineRun(subgraph);
 }
 
 
 int hcw_dev_postrun(struct device* dev, struct subgraph* subgraph)
 {
-    auto engine = (ODLAEngine*)subgraph->device_graph;
-    engine->ODLAEnginePostRun();
+    auto engine = (HCWEngine*)subgraph->device_graph;
+    engine->HCWEnginePostRun();
     delete engine;
 
     return 0;

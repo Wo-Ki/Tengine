@@ -36,7 +36,7 @@ int benchmark_threads = 1;
 int benchmark_model = -1;
 int benchmark_cluster = 0;
 int benchmark_mask = 0xFFFF;
-int benchmark_data_type = 0;
+int benchmark_data_type = 4;
 std::string benchmark_device = "";
 context_t s_context;
 
@@ -72,7 +72,8 @@ int benchmark_graph(options_t* opt, const char* name, const char* file, int heig
     int input_size = height * width * channel;
     int shape[] = {batch, channel, height, width}; // nchw
 
-    std::vector<unsigned char> input_buffer(batch * input_size * get_tenser_element_size(benchmark_data_type));
+//    std::vector<unsigned char> input_buffer(batch * input_size * get_tenser_element_size(benchmark_data_type));
+    std::vector<unsigned char> input_buffer(batch * input_size * 1);
 
     memset(input_buffer.data(), 1, input_buffer.size());
 
@@ -145,7 +146,7 @@ int benchmark_graph(options_t* opt, const char* name, const char* file, int heig
     fprintf(stderr, "%20s  min = %7.2f ms   max = %7.2f ms   avg = %7.2f ms\n", name, min, max, sum);
 
     // release tengine graph
-    release_graph_tensor(input_tensor);
+//    release_graph_tensor(input_tensor);
     postrun_graph(graph);
     destroy_graph(graph);
 
@@ -217,7 +218,7 @@ int main(int argc, char* argv[])
 
     struct options opt;
     opt.num_thread = benchmark_threads;
-    opt.precision = TENGINE_MODE_FP32;
+    opt.precision = TENGINE_MODE_INT8;
     opt.affinity = benchmark_mask;
 
     switch (benchmark_cluster)
@@ -303,20 +304,20 @@ int main(int argc, char* argv[])
             benchmark_graph(&opt, benchmark_model_file.c_str(), benchmark_model_file.c_str(), w, h, c, n);
             break;
         }
-        benchmark_graph(&opt, "squeezenet_v1.1", "./models/squeezenet_v1.1_benchmark.tmfile", 227, 227, 3, 1);
-        benchmark_graph(&opt, "mobilenetv1", "./models/mobilenet_benchmark.tmfile", 224, 224, 3, 1);
-        benchmark_graph(&opt, "mobilenetv2", "./models/mobilenet_v2_benchmark.tmfile", 224, 224, 3, 1);
-        benchmark_graph(&opt, "mobilenetv3", "./models/mobilenet_v3_benchmark.tmfile", 224, 224, 3, 1);
-        benchmark_graph(&opt, "shufflenetv2", "./models/shufflenet_v2_benchmark.tmfile", 224, 224, 3, 1);
-        benchmark_graph(&opt, "resnet18", "./models/resnet18_benchmark.tmfile", 224, 224, 3, 1);
-        benchmark_graph(&opt, "resnet50", "./models/resnet50_benchmark.tmfile", 224, 224, 3, 1);
-        benchmark_graph(&opt, "googlenet", "./models/googlenet_benchmark.tmfile", 224, 224, 3, 1);
-        benchmark_graph(&opt, "inceptionv3", "./models/inception_v3_benchmark.tmfile", 299, 299, 3, 1);
-        benchmark_graph(&opt, "vgg16", "./models/vgg16_benchmark.tmfile", 224, 224, 3, 1);
-        benchmark_graph(&opt, "mssd", "./models/mssd_benchmark.tmfile", 300, 300, 3, 1);
-        benchmark_graph(&opt, "retinaface", "./models/retinaface_benchmark.tmfile", 320, 240, 3, 1);
-        benchmark_graph(&opt, "yolov3_tiny", "./models/yolov3_tiny_benchmark.tmfile", 416, 416, 3, 1);
-        benchmark_graph(&opt, "mobilefacenets", "./models/mobilefacenets_benchmark.tmfile", 112, 112, 3, 1);
+        benchmark_graph(&opt, "squeezenet_v1.1", "./models_int8/squeezenet_v1.1_benchmark.tmfile", 227, 227, 3, 1);
+        benchmark_graph(&opt, "mobilenetv1", "./models_int8/mobilenet_benchmark.tmfile", 224, 224, 3, 1);
+        benchmark_graph(&opt, "mobilenetv2", "./models_int8/mobilenet_v2_benchmark.tmfile", 224, 224, 3, 1);
+//        benchmark_graph(&opt, "mobilenetv3", "./models_int8/mobilenet_v3_benchmark.tmfile", 224, 224, 3, 1);
+//        benchmark_graph(&opt, "shufflenetv2", "./models_int8/shufflenet_v2_benchmark.tmfile", 224, 224, 3, 1);
+        benchmark_graph(&opt, "resnet18", "./models_int8/resnet18_benchmark.tmfile", 224, 224, 3, 1);
+        benchmark_graph(&opt, "resnet50", "./models_int8/resnet50_benchmark.tmfile", 224, 224, 3, 1);
+//        benchmark_graph(&opt, "googlenet", "./models_int8/googlenet_benchmark.tmfile", 224, 224, 3, 1);
+        benchmark_graph(&opt, "inceptionv3", "./models_int8/inception_v3_benchmark.tmfile", 299, 299, 3, 1);
+        benchmark_graph(&opt, "vgg16", "./models_int8/vgg16_benchmark.tmfile", 224, 224, 3, 1);
+        benchmark_graph(&opt, "mssd", "./models_int8/mssd_benchmark.tmfile", 300, 300, 3, 1);
+        benchmark_graph(&opt, "retinaface", "./models_int8/retinaface_benchmark.tmfile", 320, 240, 3, 1);
+        benchmark_graph(&opt, "yolov3_tiny", "./models_int8/yolov3_tiny_benchmark.tmfile", 416, 416, 3, 1);
+//        benchmark_graph(&opt, "mobilefacenets", "./models_int8/mobilefacenets_benchmark.tmfile", 112, 112, 3, 1);
     }
 
     /* release tengine */

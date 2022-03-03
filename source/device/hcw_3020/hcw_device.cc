@@ -73,7 +73,7 @@ int hcw_describe(struct device* device, struct vector* allowed_ops, struct vecto
         }
     }
 
-    // small only supprt int8
+    // only supprt int8/int16
     int precision_var = TENGINE_DT_INT8;
     push_vector_data(precision, &precision_var);
 
@@ -83,7 +83,7 @@ int hcw_describe(struct device* device, struct vector* allowed_ops, struct vecto
 
 int hcw_evaluation(struct device* device, struct subgraph* sub_graph, struct vector* evolution_tensors, struct vector* evolution_nodes)
 {
-    // nothing to do with opendla
+    // nothing to do
     (void)device;
     (void)sub_graph;
     (void)evolution_tensors;

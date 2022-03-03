@@ -73,6 +73,7 @@ typedef struct tensor
         float* f32;
         uint16_t* f16;
         int32_t* i32;
+        int16_t  i16;
     };
 
     char* name; //!< tensor name

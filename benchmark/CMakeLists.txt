@@ -50,3 +50,4 @@ ENDFUNCTION()
 
 # add benchmark
 TENGINE_BENCHMARK (tm_benchmark      tm_benchmark.cc)
+TENGINE_BENCHMARK (tm_benchmark_int8      tm_benchmark_int8.cc)

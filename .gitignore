@@ -57,3 +57,7 @@ build*/
 # Python
 *.egg-info/
 __pycache__/
+
+# models
+benchmark/models_int8/
+models/
