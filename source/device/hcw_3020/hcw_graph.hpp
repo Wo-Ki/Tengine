@@ -28,9 +28,9 @@ extern "C" {
 #include "device/device.h"
 #include "graph/subgraph.h"
 
-int hwc_dev_init(struct device* dev);
-int hwc_dev_prerun(struct device* dev, struct subgraph* subgraph, void* options);
-int hwc_dev_run(struct device* dev, struct subgraph* subgraph);
-int hwc_dev_postrun(struct device* dev, struct subgraph* subgraph);
-int hwc_dev_release(struct device* dev);
+int hcw_dev_init(struct device* dev);
+int hcw_dev_prerun(struct device* dev, struct subgraph* subgraph, void* options);
+int hcw_dev_run(struct device* dev, struct subgraph* subgraph);
+int hcw_dev_postrun(struct device* dev, struct subgraph* subgraph);
+int hcw_dev_release(struct device* dev);
 }
