@@ -159,7 +159,7 @@ int ref_conv_int8(struct tensor* input_tensor, struct tensor* output_tensor, str
                             }
                         }
 
-                        int out = round(total / output_scale);
+                        int out = round(f / output_scale);
                         if (out > 127)
                             out = 127;
                         if (out < -127)

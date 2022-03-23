@@ -24,16 +24,12 @@
 
 #pragma once
 
-#include "hcw_define.h"
-
-extern "C" {
-#include "api/c_api.h"
 #include "device/device.h"
+#include "graph/subgraph.h"
 
-struct hcw_device
-{
-    struct device base;
-};
+int hcw_dev_init(struct device* dev);
+int hcw_dev_prerun(struct device* dev, struct subgraph* subgraph, void* options);
+int hcw_dev_run(struct device* dev, struct subgraph* subgraph);
+int hcw_dev_postrun(struct device* dev, struct subgraph* subgraph);
+int hcw_dev_release(struct device* dev);
 
-DLLEXPORT int register_hcw_device(void);
-}

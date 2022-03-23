@@ -29,8 +29,8 @@
 #include "tengine/c_api.h"
 #include "tengine_operations.h"
 
-#define DEFAULT_IMG_H        224
-#define DEFAULT_IMG_W        224
+#define DEFAULT_IMG_H        28
+#define DEFAULT_IMG_W        28
 #define DEFAULT_SCALE1       0.017f
 #define DEFAULT_SCALE2       0.017f
 #define DEFAULT_SCALE3       0.017f
@@ -85,8 +85,8 @@ int tengine_classify(const char* model_file, const char* image_dir, int img_h, i
     }
 
     /* set the shape, data buffer of input_tensor of the graph */
-    int img_size = img_h * img_w * 3;
-    int dims[] = {1, 3, img_h, img_w}; // nchw
+    int img_size = img_h * img_w * 1;
+    int dims[] = {1, 1, img_h, img_w}; // nchw
     float* input_data = (float*)malloc(img_size * sizeof(float));
     if (input_data == NULL)
     {

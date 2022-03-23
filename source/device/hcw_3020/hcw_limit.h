@@ -24,9 +24,8 @@
 
 #pragma once
 
-extern "C" {
 #include "operator/op.h"
-}
+
 
 const int hcw_supported_ops[] = {
 
@@ -44,7 +43,7 @@ const int hcw_supported_ops[] = {
     //    OP_CLIP,
     //    OP_COMPARISON,
     //    OP_CONCAT,
-//    OP_CONST,
+    OP_CONST,
     OP_CONV,
     //    OP_CROP,
     //    OP_DECONV,
@@ -52,7 +51,7 @@ const int hcw_supported_ops[] = {
     //    OP_DETECTION_OUTPUT,
     //    OP_DETECTION_POSTPROCESS,
     //    OP_DROPOUT,
-    //    OP_ELTWISE,
+    OP_ELTWISE,
     //    OP_ELU,
     //    OP_EMBEDDING,
     //    OP_EXPANDDIMS,
@@ -63,7 +62,7 @@ const int hcw_supported_ops[] = {
     //    OP_GRU,
     //    OP_HARDSIGMOID,
     //    OP_HARDSWISH,
-//    OP_INPUT,
+    OP_INPUT,
     //    OP_INSTANCENORM,
     //    OP_INTERP,
     //    OP_LOGICAL,
@@ -86,10 +85,10 @@ const int hcw_supported_ops[] = {
     //    OP_REDUCEL2,
     //    OP_REDUCTION,
     //    OP_REGION,
-        OP_RELU,
+    OP_RELU,
     //    OP_RELU6,
     //    OP_REORG,
-    //    OP_RESHAPE,
+    //    OP_RESHAPE,fv
     //    OP_RESIZE,
     //    OP_REVERSE,
     OP_RNN,
@@ -100,7 +99,7 @@ const int hcw_supported_ops[] = {
     //    OP_SCALE,
     //    OP_SELU,
     //    OP_SHUFFLECHANNEL,
-        OP_SIGMOID,
+    OP_SIGMOID,
     //    OP_SLICE,
     //    OP_SOFTMAX,
     //    OP_SPACETOBATCHND,

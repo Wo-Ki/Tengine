@@ -24,13 +24,27 @@
 
 #pragma once
 
-extern "C" {
-#include "device/device.h"
-#include "graph/subgraph.h"
+#include "hcw_define.h"
 
-int hwc_dev_init(struct device* dev);
-int hwc_dev_prerun(struct device* dev, struct subgraph* subgraph, void* options);
-int hwc_dev_run(struct device* dev, struct subgraph* subgraph);
-int hwc_dev_postrun(struct device* dev, struct subgraph* subgraph);
-int hwc_dev_release(struct device* dev);
-}
+#include "hcw_executor.h"
+#include "c_api.h"
+#include "graph/tensor.h"
+#include "graph/node.h"
+#include "graph/graph.h"
+#include "graph/subgraph.h"
+#include "executer/executer.h"
+#include "optimizer/split.h"
+#include "module/module.h"
+
+#include "utility/vector.h"
+#include "utility/log.h"
+#include <sys/types.h>
+#include "device/device.h"
+#include "operator/op.h"
+struct hcw_device
+    {
+    struct device base;
+    };
+
+DLLEXPORT int register_hcw_device(void);
+

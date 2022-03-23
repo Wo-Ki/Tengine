@@ -25,3 +25,5 @@
 #pragma once
 
 #define HCW_DEV_NAME "HCW_3020"
+
+#define HCW_DEBUG_PRINT

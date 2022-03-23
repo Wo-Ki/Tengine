@@ -117,7 +117,6 @@ image imread2caffe(image resImg, int img_w, int img_h, float* means, float* scal
 image imread_process(const char* filename, int img_w, int img_h, float* means, float* scale)
 {
     image out = imread(filename);
-
     int choice = 0;
     if (out.c == 1)
         choice = 0;
@@ -127,7 +126,7 @@ image imread_process(const char* filename, int img_w, int img_h, float* means, f
     switch (choice)
     {
     case 0:
-        out = gray2bgr(out);
+//        out = gray2bgr(out); // MNIST数据为单通道，但不需要转为bgr
         break;
     case 1:
         out = rgb2gray(out);
