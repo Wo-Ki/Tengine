@@ -35,31 +35,27 @@ extern int setPool(u32 max_or_avg, u32 height_flag, u32 mode, u32 F, u32 S, u32 
 
 
 
-int HCWPoolingFunc(struct node* ir_node)
+int HCWPoolingRun(struct node* ir_node)
     {
-
     struct graph* ir_graph = ir_node->graph;
     struct pool_param* param = (struct pool_param*)ir_node->op.param_mem;
 
     struct tensor* input_tensor = get_ir_graph_tensor(ir_graph, ir_node->input_tensors[0]);
     struct tensor* output_tensor = get_ir_graph_tensor(ir_graph, ir_node->output_tensors[0]);
-    //    uint16_t output_size = calc_output_size(input_tensor->dims[2], param->kernel_h, param->stride_h, param->pad_h0, 3);
 
-    s16* input_data_s16 = (s16*)malloc(input_tensor->elem_num);
-    s16* output_data_s16 = (s16*)malloc(output_tensor->elem_num);
+    s16* input_data_s16 = (s16*)malloc(sizeof(s16)*input_tensor->elem_num);
+    s16* output_data_s16 = (s16*)malloc(sizeof(s16)*output_tensor->elem_num);
+    int8_t* output_int8 = (int8_t*)malloc(sizeof(int8_t)*output_tensor->elem_num);
 
-    //int8 to int16
     int8_t* input_tensor_int8 = (int8_t*)input_tensor->data;
+    //    printf("input data:\n");
     for(int i=0;i<input_tensor->elem_num;i++){
+        //    	printf("%d ", input_tensor_int8[i]);
         input_data_s16[i] = (s16)input_tensor_int8[i];
     }
 
     u64 input_tensor_phy = hrKmToPhys(input_data_s16);
     u64 output_data_phy = hrKmToPhys(output_data_s16);
-    //    if (input_tensor->elem_num % 16 != 0) // TODO:signle channel
-    //    {
-    //
-    //    }
 
     if (param->pool_method == 0)
     { // max pool
@@ -83,15 +79,18 @@ int HCWPoolingFunc(struct node* ir_node)
         printf("POOL1 config done!\n");
         cal_resp_proc(RESP_TYPE);
         printf("POOL1 done \n");
-        int8_t* output_int8 = (int8_t*)malloc(output_tensor->elem_num);
 #ifdef HCW_DEBUG_PRINT
 
         printf("output_tensor->elem_num:%d\n", output_tensor->elem_num);
-#endif
-
+        printf("output data:\n");
         for(int i=0;i<output_tensor->elem_num;i++){
             output_int8[i] = (int8_t)output_data_s16[i];
+
+            //        	printf("%d ", output_data_s16[i]);
         }
+#endif
+
+
         output_tensor->data = output_int8;
 
     }
@@ -100,7 +99,7 @@ int HCWPoolingFunc(struct node* ir_node)
         fprintf(stderr, "PoolingFun Error: Only support Max Pool,exit...");
         return -1;
     }
-    free(input_data_s16);
+    //    free(input_data_s16);
     }
 
     //int setPool(u32 max_or_avg, u32 height_flag, u32 mode, u32 F, u32 S, u32 channel, u32 zero, u32 N,

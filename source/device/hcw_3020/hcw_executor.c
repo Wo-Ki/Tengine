@@ -30,23 +30,24 @@
 #include "device/device.h"
 #include <stdio.h>
 
-#define _P2V(addr)	(0x9000000000000000 | ((u64)(addr)))	/* physical address to virtual address */
+#define _P2V(addr) (0x9000000000000000 | ((u64)(addr))) /* physical address to virtual address */
 
-#define     SetReg(_x,_y)       do{ \
-(*(volatile u32*)(_P2V(_x))) = (_y);\
-}while(0)
+#define SetReg(_x, _y)                       \
+    do {                                     \
+        (*(volatile u32*)(_P2V(_x))) = (_y); \
+    } while (0)
 
-#define     ReadReg(_x,_y)       do{ \
-(_y) = *(volatile u32*)(_P2V(_x)); \
-}while(0)
-
+#define ReadReg(_x, _y)                    \
+    do {                                   \
+        (_y) = *(volatile u32*)(_P2V(_x)); \
+    } while (0)
 
 extern int HCWPoolingFunc(struct node* ir_node);
 extern void choose_no(u32 num);
 extern void extract_feature_from_tensor_hcw(const char* comment, const char* layer_name, const struct tensor* tensor);
 
 int hcw_dev_init(struct device* dev)
-    {
+{
     printf("wk hcw_dev_init\n");
     //	choose_no(0);
 
@@ -56,17 +57,47 @@ int hcw_dev_init(struct device* dev)
     //    sleep(1);
     (void)dev;
     return 0;
-    }
+}
 
-    int hcw_dev_prerun(struct device* dev, struct subgraph* subgraph, void* options)
-        {
+int hcw_dev_prerun(struct device* dev, struct subgraph* subgraph, void* options)
+{
     printf("wk hcw_dev_prerun\n");
+    struct graph* ir_graph = subgraph->graph;
 
-    return 0;
+    for (int i = 0; i < subgraph->node_num; i++)
+    {
+        uint16_t node_id = subgraph->node_list[i];
+        struct node* ir_node = get_ir_graph_node(ir_graph, node_id);
+        fprintf(stdout, "wk HCWEnginePreRun:ir_node name: %s\n", ir_node->name);
+
+        if (ir_node->op.type == OP_POOL)
+        {
+            fprintf(stdout, "wk OP_POOL\n");
+            //			HCWPoolingFunc(ir_node);
         }
+        else if (ir_node->op.type == OP_CONV)
+        {
+            fprintf(stdout, "wk OP_Conv\n");
+            HCWConvPreRun(ir_node);
+        }
+        else if (ir_node->op.type == OP_FC)
+        {
+            fprintf(stdout, "wk OP_FC\n");
+            HCWFcPreRun(ir_node);
+        }
+        else if (ir_node->op.type == OP_RELU)
+        {
+            fprintf(stdout, "wk OP_RELU\n");
+            //			HCWReluFunc(ir_node);
+        }
+        else
+            fprintf(stdout, "wk Unknown OP\n");
+    }
+    return 0;
+}
 
-        int hcw_dev_run(struct device* dev, struct subgraph* subgraph)
-            {
+int hcw_dev_run(struct device* dev, struct subgraph* subgraph)
+{
     fprintf(stdout, "wk HCWEngineRun\n");
     struct graph* ir_graph = subgraph->graph;
     /* Input */
@@ -88,25 +119,28 @@ int hcw_dev_init(struct device* dev)
         struct node* ir_node = get_ir_graph_node(ir_graph, node_id);
         fprintf(stdout, "wk HCWEngineRun:ir_node name: %s\n", ir_node->name);
 
-        if (ir_node->op.type == OP_POOL){
-            fprintf(stdout,"wk OP_POOL\n");
-            HCWPoolingFunc(ir_node);
+        if (ir_node->op.type == OP_POOL)
+        {
+            fprintf(stdout, "wk OP_POOL\n");
+            HCWPoolingRun(ir_node);
         }
-        else if(ir_node->op.type == OP_CONV){
-            fprintf(stdout,"wk OP_Conv\n");
-            HCWConvFunc(ir_node);
+        else if (ir_node->op.type == OP_CONV)
+        {
+            fprintf(stdout, "wk OP_Conv\n");
+            HCWConvRun(ir_node);
         }
-        else if(ir_node->op.type == OP_FC){
-            fprintf(stdout,"wk OP_FC\n");
-            HCWFcFunc(ir_node);
+        else if (ir_node->op.type == OP_FC)
+        {
+            fprintf(stdout, "wk OP_FC\n");
+            HCWFcRun(ir_node);
         }
-        else if(ir_node->op.type == OP_RELU){
-            fprintf(stdout,"wk OP_RELU\n");
-            HCWReluFunc(ir_node);
-
+        else if (ir_node->op.type == OP_RELU)
+        {
+            fprintf(stdout, "wk OP_RELU\n");
+            HCWReluRun(ir_node);
         }
         else
-            fprintf(stdout,"wk Unknown OP\n");
+            fprintf(stdout, "wk Unknown OP\n");
     }
 
     /* Output */
@@ -118,15 +152,15 @@ int hcw_dev_init(struct device* dev)
     }
 
     return 0;
-            }
+}
 
-            int hcw_dev_postrun(struct device* dev, struct subgraph* subgraph)
-                {
+int hcw_dev_postrun(struct device* dev, struct subgraph* subgraph)
+{
     return 0;
-                }
+}
 
-                int hcw_dev_release(struct device* dev)
-                    {
+int hcw_dev_release(struct device* dev)
+{
     (void)dev;
     return 0;
-                    }
+}

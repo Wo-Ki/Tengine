@@ -117,12 +117,18 @@ int test_hcw_op_pooling_main()
     //	                         5, 5, 5, 5, 5,
     //	                         5, 5, 5, 5, 5,
     //	                         5, 8, 5, 5, 5};
-    float input_array[16] = {5, 7, 4, 4,
-                             8, 5, 5, 7,
-                             2, 3, 4, 3,
-                             8, 5, 5, 7,};
-    float reference_out[9] = {8, 7,
-                              8, 7};
+    int16_t input_array[32] = {5, 7, 4, 4,
+                               8, 5, 5, 7,
+                               2, 3, 4, 3,
+                               8, 5, 5, 7,
+                               5, 7, 4, 4,
+                               8, 5, 5, 7,
+                               2, 3, 4, 3,
+                               8, 5, 5, 7,};
+    int16_t reference_out[8] = {8, 7,
+                                8, 7,
+                                8, 7,
+                                8, 7,};
 
     float input_scale = 1.f;
     int input_zero_point = 0;
@@ -130,7 +136,7 @@ int test_hcw_op_pooling_main()
     int output_zero_point = 0;
 
     u32 n = 1;
-    u32 c = 1;
+    u32 c = 2;
     u32 h = 4;
     u32 w = 4;
     const char* test_node_name = "pooling";
@@ -150,7 +156,7 @@ int test_hcw_op_pooling_main()
     u32 img_size = n * c * h * w;
     u32 dims[] = {n, c, h, w}; // nchw
     //    struct vector* input_i8 = create_vector(sizeof(img_size), NULL);
-    int8_t* input_i8 = (int8_t*)malloc(img_size);
+    int16_t* input_i16 = (int16_t*)malloc(sizeof(int16_t)*img_size);
 
     tensor_t input_tensor = get_graph_input_tensor(graph, 0, 0);
     if (input_tensor == NULL)
@@ -177,15 +183,15 @@ int test_hcw_op_pooling_main()
     for (int i = 0; i < img_size; i++)
     {
         int idata = (round)(input_array[i] / input_scale);
-        if (idata > 127)
-            idata = 127;
-        else if (idata < -127)
-            idata = -127;
+        if (idata > 32767)
+            idata = 32767;
+        else if (idata < -32767)
+            idata = -32767;
 
-        input_i8[i] = idata;
+        input_i16[i] = idata;
         //        std::cout << "input_i8 : " << i << " -> " << idata << std::endl;
     }
-    if (set_tensor_buffer(input_tensor, input_i8, img_size * sizeof(int8_t)) < 0)
+    if (set_tensor_buffer(input_tensor, input_i16, img_size) < 0)
     {
         fprintf(stderr, "Set input tensor buffer failed\n");
         return -1;
@@ -202,12 +208,12 @@ int test_hcw_op_pooling_main()
     /* get output and dequant int8 to fp32 */
     struct tensor* output_tensor = (struct tensor*)get_graph_output_tensor(graph, 0, 0);
 
-    int8_t* output_int8 = (int8_t*)output_tensor->data;
+    int16_t* output_int16 = (int16_t*)output_tensor->data;
     int output_size = output_tensor->elem_num;
     float* output_fp32 = (float*)malloc(output_size * sizeof(float));
 
     for (int i = 0; i < output_size; i++){
-        output_fp32[i] = (float)output_int8[i] * output_scale;
+        output_fp32[i] = (float)output_int16[i] * output_scale;
     }
     /* check the result */
     ret = float_mismatch(output_fp32, reference_out, output_size);
