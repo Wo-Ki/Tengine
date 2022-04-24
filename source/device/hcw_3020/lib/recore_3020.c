@@ -2180,8 +2180,7 @@ case MAT_TRANS_ID:
     u32 val ;
     u64 val_pic ;
 
-
-    if(resptype)
+    if (resptype)
     {
         do {
             ReadReg(0x1f0701ac,val);

@@ -66,14 +66,14 @@ int create_test_fc_node(graph_t graph, const char* input_name, const char* node_
     node_t weight_node = create_graph_node(graph, "weight", "Const");
     tensor_t weight_tensor = create_graph_tensor(graph, "weight", TENGINE_DT_INT8);
     set_node_output_tensor(weight_node, 0, weight_tensor, TENSOR_TYPE_CONST);
-    int weight_dims[2] = {2, 16}; // channel num
+    int weight_dims[2] = {86, 16}; // channel num
     set_tensor_shape(weight_tensor, weight_dims, 2);
 
     /* bias */
     node_t bias_node = create_graph_node(graph, "bias", "Const");
     tensor_t bias_tensor = create_graph_tensor(graph, "bias", TENGINE_DT_INT32);
     set_node_output_tensor(bias_node, 0, bias_tensor, TENSOR_TYPE_CONST);
-    int bias_dims[1] = {2};  // channel num
+    int bias_dims[1] = {86};  // channel num
     set_tensor_shape(bias_tensor, bias_dims, 1);
 
     /* input tensors of test node */
@@ -88,7 +88,7 @@ int create_test_fc_node(graph_t graph, const char* input_name, const char* node_
     /* set params */
     struct fc_param* param = (struct fc_param*)(struct node*)test_node->op.param_mem;
 
-    param->num_output = 2;
+    param->num_output = 86;
 
     return 0;
 }
@@ -104,21 +104,65 @@ int test_hcw_op_fc_main()
      * float32 = int8 * scale
      */
     float input_scale = 0.03937f;
-    float weight_scales[2] = {0.023622f, 0.007874f};
+    float weight_scales[86] = {};
     float output_scale = 0.2007874f;
     int input_zero_point = 0;
     int weight_zero_point[2] = {0, 0};
     int output_zero_point = 0;
 
     /* float32 data */
-    float reference_out[] = {75,75};
+    //    float reference_out[] = {75,75,};
+    float reference_out[86] = {};
 
     //    float input_data[3] = {1, 2, 1};
 
-    int8_t weight_data[32] = {1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
-                              1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0};
+    int8_t weight_data[86*16] = {
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0, 1,   0,   1, -1, 0, -1, 1, 0, 2,0,0,0,0,0,0,0,
+        };
 
-    int32_t bias_data[2] = {0,0};
+    int32_t bias_data[86] = {0};
 
     /* int8 data */
     /* int8 = clip(round(float32 / scale), -127, 127) */
@@ -149,19 +193,19 @@ int test_hcw_op_fc_main()
     struct tensor* bias_tensor = (struct tensor*)get_graph_tensor(ir_graph, "bias");
     struct tensor* output_tensor = (struct tensor*)get_graph_tensor(ir_graph, "fc");
 
-    //    tensor_t weight_tesnor = get_graph_input_tensor(ir_graph, 1, 0);
-    //    set_tensor_quant_param(input_tensor, &input_scale, &input_zero_point, 1);
-    //    set_tensor_quant_param(weight_tensor, weight_scales, &weight_zero_point, 2);
-    //    set_tensor_quant_param(output_tensor, &output_scale, &output_zero_point, 1);
+    tensor_t weight_tesnor = get_graph_input_tensor(ir_graph, 1, 0);
+    set_tensor_quant_param(input_tensor, &input_scale, &input_zero_point, 1);
+    set_tensor_quant_param(weight_tensor, weight_scales, &weight_zero_point, 2);
+    set_tensor_quant_param(output_tensor, &output_scale, &output_zero_point, 1);
 
     // set input data
     set_tensor_buffer(input_tensor, input_i8_data, 16 * sizeof(int8_t));
 
     // set weight data
-    set_tensor_buffer(weight_tensor, weight_data, 32 * sizeof(int8_t));
+    set_tensor_buffer(weight_tensor, weight_data, 1376 * sizeof(int8_t));
 
     // set bias data
-    set_tensor_buffer(bias_tensor, bias_data,2 * sizeof(int32_t));
+    set_tensor_buffer(bias_tensor, bias_data,86 * sizeof(int32_t));
     ret = test_graph_run(ir_graph);
     if (0 != ret)
     {
@@ -186,10 +230,13 @@ int test_hcw_op_fc_main()
     //    std::vector<float> output_fp32(output_size);
     float* output_fp32 = (float*)malloc(output_size * sizeof(float));
 
+    printf("output_int8[i]:\n");
     for (int i = 0; i < output_size; i++)
         //        output_fp32[i] = (float)output_int8[i] * output_scale;
+        {
         output_fp32[i] = (float)output_int8[i];
-
+        printf("%d ",output_int8[i] );
+        }
 
     /* check the result */
     ret = float_mismatch(output_fp32, reference_out, output_size);

@@ -30,14 +30,15 @@
 #include <stdio.h>
 
 int hcw_describe(struct device* device, struct vector* allowed_ops, struct vector* blocked_ops, struct vector* precision)
-    {
+{
     (void)device;
 
     //    for (int op_type : hcw_supported_ops)
     //    {
     //        push_vector_data(allowed_ops, &op_type);
     //    }
-    for(int  i=0;i<sizeof(hcw_supported_ops)/sizeof(hcw_supported_ops[0]);i++){
+    for (int i = 0; i < sizeof(hcw_supported_ops) / sizeof(hcw_supported_ops[0]); i++)
+    {
         push_vector_data(allowed_ops, &hcw_supported_ops[i]);
     }
     for (int i = 0; i < OP_BUILTIN_LAST; i++)
@@ -52,14 +53,16 @@ int hcw_describe(struct device* device, struct vector* allowed_ops, struct vecto
         //                break;
         //            }
         //        }
-        for(int  j=0;j<sizeof(hcw_supported_ops)/sizeof(hcw_supported_ops[0]);j++){
-            if(hcw_supported_ops[j]==i){
+        for (int j = 0; j < sizeof(hcw_supported_ops) / sizeof(hcw_supported_ops[0]); j++)
+        {
+            if (hcw_supported_ops[j] == i)
+            {
                 //        		printf("wk j==i j:%d\n",hcw_supported_ops[j]);
                 in_list = TRUE;
                 break;
             }
         }
-        if (in_list==FALSE)
+        if (in_list == FALSE)
         {
             //    		printf("wk j==i i:%d\n",i);
 
@@ -72,11 +75,10 @@ int hcw_describe(struct device* device, struct vector* allowed_ops, struct vecto
     push_vector_data(precision, &precision_var);
 
     return 0;
-    }
+}
 
-
-    int hcw_evaluation(struct device* device, struct subgraph* sub_graph, struct vector* evolution_tensors, struct vector* evolution_nodes)
-        {
+int hcw_evaluation(struct device* device, struct subgraph* sub_graph, struct vector* evolution_tensors, struct vector* evolution_nodes)
+{
     // nothing to do
     (void)device;
     (void)sub_graph;
@@ -84,11 +86,10 @@ int hcw_describe(struct device* device, struct vector* allowed_ops, struct vecto
     (void)evolution_nodes;
 
     return 0;
-        }
+}
 
-
-        int hcw_allocate(struct device* device, struct subgraph* sub_graph)
-            {
+int hcw_allocate(struct device* device, struct subgraph* sub_graph)
+{
     if (NULL == device)
     {
         return -1;
@@ -106,19 +107,17 @@ int hcw_describe(struct device* device, struct vector* allowed_ops, struct vecto
     }
 
     return 0;
-            }
+}
 
-
-            int hcw_release(struct device* device, struct subgraph* sub_graph)
-                {
+int hcw_release(struct device* device, struct subgraph* sub_graph)
+{
     (void)sub_graph;
 
     return 0;
-                }
+}
 
-
-                int hcw_split_graph(struct graph* ir_graph)
-                    {
+int hcw_split_graph(struct graph* ir_graph)
+{
     printf("wk hcw_split_graph\n");
     struct device* cur_dev = ir_graph->attribute->context->device;
 
@@ -153,7 +152,6 @@ int hcw_describe(struct device* device, struct vector* allowed_ops, struct vecto
     // add node sub graph id
     for (int i = 0; i < (uint16_t)get_vector_num(ir_graph->subgraph_list); i++)
     {
-
         struct subgraph* sub_graph = *(struct subgraph**)get_vector_data(ir_graph->subgraph_list, i);
         sub_graph->index = i;
         printf("wk sub_graph name:%s\n", sub_graph->device->name);
@@ -169,48 +167,41 @@ int hcw_describe(struct device* device, struct vector* allowed_ops, struct vecto
     }
 
     return 0;
-                    }
+}
 
-
-
-                    static struct interface hcw_interface = {
-    .init           = hcw_dev_init,
-    .pre_run        = hcw_dev_prerun,
-    .run            = hcw_dev_run,
-    .post_run       = hcw_dev_postrun,
-    .async_run      = NULL,
-    .async_wait     = NULL,
-    .release_graph  = NULL,
+static struct interface hcw_interface = {
+    .init = hcw_dev_init,
+    .pre_run = hcw_dev_prerun,
+    .run = hcw_dev_run,
+    .post_run = hcw_dev_postrun,
+    .async_run = NULL,
+    .async_wait = NULL,
+    .release_graph = NULL,
     .release_device = hcw_dev_release,
-    };
-
+};
 
 static struct allocator hcw_allocator = {
-    .describe       = hcw_describe,
-    .evaluation     = hcw_evaluation,
-    .allocate       = hcw_allocate,
-    .release        = hcw_release,
-    };
-
+    .describe = hcw_describe,
+    .evaluation = hcw_evaluation,
+    .allocate = hcw_allocate,
+    .release = hcw_release,
+};
 
 static struct optimizer hcw_optimizer = {
-    .split_graph    = hcw_split_graph,
+    .split_graph = hcw_split_graph,
     .optimize_graph = NULL,
-    };
-
-
+};
 
 static struct hcw_device hcw_dev = {
     .base = {
-        .name       = HCW_DEV_NAME,
-        .interface  = &hcw_interface,
-        .allocator  = &hcw_allocator,
-        .optimizer  = &hcw_optimizer,
-        .scheduler  = NULL,
-        .privacy    = NULL,
-        },
-        };
-
+        .name = HCW_DEV_NAME,
+        .interface = &hcw_interface,
+        .allocator = &hcw_allocator,
+        .optimizer = &hcw_optimizer,
+        .scheduler = NULL,
+        .privacy = NULL,
+    },
+};
 
 int register_hcw_device(void)
 {
@@ -225,7 +216,6 @@ int register_hcw_device(void)
     return 0;
 }
 
-
 int unregister_hcw_device(void)
 {
     int ret = unregister_device_t(&hcw_dev.base);
@@ -239,4 +229,3 @@ int unregister_hcw_device(void)
 
     return 0;
 }
-
